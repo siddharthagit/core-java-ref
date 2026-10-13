@@ -18,3 +18,16 @@ hs_err_pid*
 
 .DS_Store
 
+# Build output
+target/
+bin/
+out/
+
+# IDE files
+.classpath
+.project
+.settings/
+.idea/
+*.iml
+.vscode/
+
