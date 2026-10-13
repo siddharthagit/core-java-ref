@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+# Build and run a single example.
+#
+#   ./run                       list every topic and its examples
+#   ./run <topic>               list the examples in one topic
+#   ./run <topic> <Example>     build that topic and run the example
+#
+# Anything after <Example> is passed to the example as program arguments.
+set -euo pipefail
+cd "$(dirname "$0")"
+
+topics() {
+  for pom in */pom.xml; do echo "${pom%/pom.xml}"; done
+}
+
+# Examples are the classes in a topic that declare a main method.
+examples() {
+  grep -rlE 'static void main[[:space:]]*\(' --include='*.java' "$1/src/main/java" 2>/dev/null \
+    | sed -E 's|.*/||; s|\.java$||' | sort
+}
+
+list_topic() {
+  echo "$1"
+  examples "$1" | sed 's/^/  /'
+}
+
+if [ $# -eq 0 ]; then
+  for topic in $(topics); do list_topic "$topic"; done
+  echo
+  echo "Run one with: ./run <topic> <Example>"
+  exit 0
+fi
+
+topic="${1%/}"
+if [ ! -f "$topic/pom.xml" ]; then
+  echo "Unknown topic '$topic'. Topics:" >&2
+  topics | sed 's/^/  /' >&2
+  exit 1
+fi
+
+if [ $# -eq 1 ]; then
+  list_topic "$topic"
+  exit 0
+fi
+
+example="${2%.java}"
+shift 2
+source_file="$(find "$topic/src/main/java" -name "$example.java" | head -n 1)"
+if [ -z "$source_file" ]; then
+  echo "No example '$example' in topic '$topic'. Examples:" >&2
+  examples "$topic" | sed 's/^/  /' >&2
+  exit 1
+fi
+main_class="${source_file#"$topic/src/main/java/"}"
+main_class="${main_class%.java}"
+main_class="${main_class//\//.}"
+
+classpath="$topic/target/classes"
+if grep -q '<dependency>' "$topic/pom.xml"; then
+  ./mvnw -q -pl "$topic" compile dependency:build-classpath -Dmdep.outputFile=target/classpath.txt
+  classpath="$classpath:$(cat "$topic/target/classpath.txt")"
+else
+  ./mvnw -q -pl "$topic" compile
+fi
+
+jvm_args=()
+if grep -q -- '--enable-preview' "$topic/pom.xml"; then
+  jvm_args+=(--enable-preview)
+fi
+
+exec java ${jvm_args[@]+"${jvm_args[@]}"} -cp "$classpath" "$main_class" "$@"

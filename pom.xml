@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.fullstacksref</groupId>
+  <artifactId>core-java-ref</artifactId>
+  <version>1.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+  <name>core-java-ref</name>
+  <description>Core Java reference examples, one Maven module per topic</description>
+
+  <!-- One module per topic. To add a topic, copy an existing module folder and list it here. -->
+  <modules>
+    <module>collections</module>
+    <module>concurrency</module>
+    <module>lambdas</module>
+    <module>language-features</module>
+    <module>numbers</module>
+    <module>records</module>
+    <module>streams</module>
+  </modules>
+
+  <properties>
+    <maven.compiler.release>24</maven.compiler.release>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.13.0</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+</project>
